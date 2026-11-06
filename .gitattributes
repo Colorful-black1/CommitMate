@@ -1,0 +1,5 @@
+# 统一换行；二进制资源不做转换
+* text=auto eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.png binary

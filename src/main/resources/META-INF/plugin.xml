@@ -1,0 +1,58 @@
+<!-- Commit Mate 插件描述文件：https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>com.commitmate.plugin</id>
+    <name>Commit Mate</name>
+    <vendor url="https://github.com/">Commit Mate</vendor>
+
+    <description><![CDATA[
+        <p>Commit Mate generates Conventional Commits style commit messages from the staged changes of your Git
+        repository, using any OpenAI Chat Completions compatible API (DeepSeek by default). You review, edit and
+        copy the generated message, then commit it yourself.</p>
+        <p>The plugin only runs read-only commands such as <code>git diff --cached</code>. It never executes
+        <code>git add</code>, <code>git commit</code> or <code>git push</code>, and never modifies files in your
+        working tree.</p>
+        <ul>
+            <li>OpenAI compatible endpoints (default DeepSeek: <code>https://api.deepseek.com/v1</code>)</li>
+            <li>API key is stored in the IntelliJ Platform PasswordSafe, never in plain configuration files</li>
+            <li>Supports multi-repository projects and add/modify/delete/rename statistics</li>
+            <li>Oversized diffs are truncated with an explicit warning instead of silently dropped</li>
+        </ul>
+        <p>插件读取当前 Git 仓库的暂存区变更，调用 OpenAI Chat Completions 兼容接口生成提交信息，
+        最终由开发者自行审核、修改与提交。</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <!-- 提交面板工具栏集成（VCS 模块在所有 JetBrains IDE 中均可用） -->
+    <depends>com.intellij.modules.vcs</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="CommitMate" displayType="BALLOON" isLogByDefault="true"/>
+
+        <applicationConfigurable
+            parentId="tools"
+            instance="com.commitmate.settings.CommitMateConfigurable"
+            id="com.commitmate.settings"
+            displayName="Commit Mate"/>
+    </extensions>
+
+    <actions>
+        <action id="CommitMate.GenerateCommitMessage"
+                class="com.commitmate.action.GenerateCommitAction"
+                text="Generate Commit Message"
+                icon="/icons/commitMate16.png"
+                description="打开 Commit Mate 对话框（不会执行任何 Git 写操作）">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="VcsGroups" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt G"/>
+        </action>
+
+        <!-- 提交面板工具栏：不弹窗，直接把提交信息流式写入提交框 -->
+        <action id="CommitMate.GenerateInCommitPanel"
+                class="com.commitmate.action.GenerateInCommitPanelAction"
+                text="Generate Commit Message"
+                icon="/icons/commitMate16.png"
+                description="针对勾选的变更生成提交信息并填入提交框（再点一次取消）">
+            <add-to-group group-id="ChangesView.CommitToolbar" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
