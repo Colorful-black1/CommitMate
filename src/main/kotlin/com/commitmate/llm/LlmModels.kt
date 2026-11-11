@@ -13,6 +13,8 @@ data class LlmConfig(
     val readTimeoutMillis: Int = DEFAULT_READ_TIMEOUT_MILLIS,
     /** 额外的请求头，例如网关要求的 `X-Head-Session`。 */
     val extraHeaders: Map<String, String> = emptyMap(),
+    /** 稳定会话 ID，作为 `x-opencode-session` 发送（OpenCode Go 用于路由与缓存优化）。 */
+    val sessionId: String = "",
 ) {
     companion object {
         const val DEFAULT_BASE_URL: String = "https://api.deepseek.com/v1"

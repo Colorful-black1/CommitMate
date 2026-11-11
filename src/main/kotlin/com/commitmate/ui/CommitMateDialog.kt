@@ -417,6 +417,7 @@ class CommitMateDialog(
             temperature = settings.temperature,
             readTimeoutMillis = settings.timeoutSeconds * 1_000,
             extraHeaders = ExtraHeaders.parse(settings.extraHeaders),
+            sessionId = settings.stableSessionId(),
         )
     }
 

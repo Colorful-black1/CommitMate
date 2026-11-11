@@ -180,6 +180,35 @@ class ChatCompletionClientTest {
     }
 
     @Test
+    fun `默认发送会话头与自定义 User-Agent`() {
+        val session = AtomicReference<String>()
+        val userAgent = AtomicReference<String>()
+        val baseUrl = startServer { exchange ->
+            session.set(exchange.requestHeaders.getFirst("x-opencode-session"))
+            userAgent.set(exchange.requestHeaders.getFirst("User-Agent"))
+            respond(exchange, 200, """{"choices":[{"message":{"content":"ok"}}]}""")
+        }
+
+        client.complete(config(baseUrl).copy(sessionId = "sess-stable"), messages())
+
+        assertEquals("sess-stable", session.get())
+        assertTrue(userAgent.get().startsWith("commit-mate/"))
+    }
+
+    @Test
+    fun `会话 ID 为空时发送兜底值`() {
+        val session = AtomicReference<String>()
+        val baseUrl = startServer { exchange ->
+            session.set(exchange.requestHeaders.getFirst("x-opencode-session"))
+            respond(exchange, 200, """{"choices":[{"message":{"content":"ok"}}]}""")
+        }
+
+        client.complete(config(baseUrl), messages())
+
+        assertTrue(session.get().isNotBlank())
+    }
+
+    @Test
     fun `未配置 API Key 时直接失败`() {
         val exception = assertThrows<LlmException> {
             client.complete(

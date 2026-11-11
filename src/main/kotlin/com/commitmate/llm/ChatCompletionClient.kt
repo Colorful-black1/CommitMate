@@ -86,9 +86,16 @@ class ChatCompletionClient {
         connection.useCaches = false
         connection.setRequestProperty("Content-Type", "application/json")
         connection.setRequestProperty("Accept", "application/json")
+        // 使用可识别的客户端标识（OpenCode Go 等网关不接受默认的 Java/xxx 之类通用 UA）
+        connection.setRequestProperty("User-Agent", USER_AGENT)
+        // OpenCode Go 要求每个会话带有稳定 ID，用于路由与 prompt 缓存
+        connection.setRequestProperty(
+            "x-opencode-session",
+            config.sessionId.ifBlank { FALLBACK_SESSION_ID },
+        )
         // 仅用于本次请求，不会写入日志
         connection.setRequestProperty("Authorization", "Bearer ${config.apiKey}")
-        // 网关可能要求的额外请求头（如 X-Head-Session），不覆盖上面的基础头
+        // 网关可能要求的额外请求头（如 X-Head-Session）；用户配置的同名头可以覆盖默认值
         for ((name, value) in config.extraHeaders) {
             if (name.equals("Authorization", ignoreCase = true) ||
                 name.equals("Content-Type", ignoreCase = true)
@@ -342,5 +349,11 @@ class ChatCompletionClient {
         private const val CANCEL_POLL_INTERVAL_MILLIS = 100L
         private const val EXTRA_WAIT_MILLIS = 5_000L
         private const val MAX_ERROR_MESSAGE_LENGTH = 500
+
+        /** 插件自身的客户端标识。发版时与 gradle.properties 中的版本保持一致。 */
+        const val USER_AGENT: String = "commit-mate/0.1.4"
+
+        /** 未配置持久化会话 ID 时的兜底值：同一次 JVM 生命周期内保持稳定。 */
+        private val FALLBACK_SESSION_ID: String = java.util.UUID.randomUUID().toString()
     }
 }

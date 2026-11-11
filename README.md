@@ -50,7 +50,7 @@
    ./gradlew buildPlugin
    ```
 
-   产物：`build/distributions/commit-mate-0.1.3.zip`
+   产物：`build/distributions/commit-mate-0.1.4.zip`
 
 2. 在 IDE 中安装：`Settings → Plugins → ⚙ → Install Plugin from Disk…`，选择上面的 zip，重启 IDE。
 
@@ -80,6 +80,23 @@
    或直接按 **Ctrl+Alt+G**。
 4. 点击 **Generate**，等待生成；也可以点 **查看 Diff** 确认送进模型的改动。
 5. 在文本框里修改，点 **Copy**（或从提交面板打开时点 **填入提交框**），然后自己在 Git Commit 面板或终端完成提交。
+
+### 接入 OpenCode Go
+
+OpenCode Go 要求客户端带会话标识，插件已内置，无需额外配置：
+
+| 配置项 | 值 |
+| --- | --- |
+| API Base URL | `https://opencode.ai/inference/go/openai/v1` |
+| Model | `deepseek-v4.1-flash`（或文档中的其它模型 ID，如 `glm-5.3`、`kimi-k3`） |
+| API Key | 在 [OpenCode Console](https://opencode.ai/console) 订阅 Go 后获得的 API Key |
+
+插件会自动追加 `/chat/completions`，并发送：
+
+- `User-Agent: commit-mate/<版本号>`：可识别的客户端标识（网关不接受 `Java/21` 这类通用 UA）；
+- `x-opencode-session: <稳定 UUID>`：首次生成并持久化到 `commit-mate.xml`，重启后不变，用于路由与 prompt 缓存。
+
+如需覆盖，在 **自定义请求头** 里写同名头即可（例如 `x-opencode-session: 自定义值`）。
 
 ## 本地开发
 
@@ -120,8 +137,10 @@ Windows 上把 `./gradlew` 换成 `gradlew.bat`。
 | 请求超时 | `120` 秒 | 读取超时；连接超时固定 15 秒 |
 | API Key | 无 | 仅保存在 PasswordSafe；窗口里留空表示沿用已保存的 Key |
 | 自定义请求头 | 空 | 每行一条 `Name: Value`，用于需要额外请求头的网关（如 opencode-go 的 `X-Head-Session`） |
+| 会话 ID | 自动生成 | 作为 `x-opencode-session` 发送；首次使用时生成 UUID 并持久化，用于 OpenCode Go 的路由与缓存优化 |
 
-> 自定义请求头会同时作用于普通生成与流式生成；`Authorization` / `Content-Type` 不会被覆盖。
+> 自定义请求头会同时作用于普通生成与流式生成；`Authorization` / `Content-Type` 不会被覆盖，
+> 但可以用同名头覆盖 `User-Agent` 或 `x-opencode-session`。
 
 ## 设计说明
 
@@ -240,7 +259,7 @@ commit-mate/
 
 ## 测试
 
-自动化测试（`./gradlew test`，共 57 个用例，全部通过）：
+自动化测试（`./gradlew test`，共 59 个用例，全部通过）：
 
 | 测试类 | 覆盖内容 |
 | --- | --- |
@@ -271,8 +290,8 @@ commit-mate/
 | 验证项 | 结果 |
 | --- | --- |
 | `./gradlew compileKotlin` | BUILD SUCCESSFUL（无编译错误） |
-| `./gradlew test` | 57 个测试全部通过 |
-| `./gradlew buildPlugin` | 产出 `build/distributions/commit-mate-0.1.3.zip`（约 129 KB，未打包 Kotlin 标准库） |
+| `./gradlew test` | 59 个测试全部通过 |
+| `./gradlew buildPlugin` | 产出 `build/distributions/commit-mate-0.1.4.zip`（约 130 KB，未打包 Kotlin 标准库） |
 | Plugin Verifier（IntelliJ IDEA 2024.1） | `IC-241.14494.240`：**Compatible** |
 | Plugin Verifier（IntelliJ IDEA 2025.3） | `IU-253.28294.334`：**Compatible**，0 处废弃 API |
 | Plugin Verifier（WebStorm 2025.3） | `WS-253.28294.332`：**Compatible**，0 处废弃 API |
