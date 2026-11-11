@@ -6,9 +6,12 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBPasswordField
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.JBUI
+import java.awt.Dimension
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JSpinner
@@ -26,6 +29,8 @@ class CommitMateConfigurable : Configurable {
     private val maxDiffField = JBTextField()
     private val timeoutField = JBTextField()
     private val workingTreeCheckBox = JBCheckBox("暂存区为空时，改用工作区未提交的变更")
+    private val extraHeadersArea = JBTextArea(3, COLUMNS)
+    private val extraHeadersScroll = JBScrollPane(extraHeadersArea)
 
     private val container = JPanel()
 
@@ -38,6 +43,8 @@ class CommitMateConfigurable : Configurable {
         maxDiffField.columns = COLUMNS
         timeoutField.columns = COLUMNS
         timeoutField.toolTipText = "单次模型请求的读取超时时间（秒）"
+        extraHeadersArea.toolTipText = "每行一条 Name: Value，例如：X-Head-Session: <会话ID>"
+        extraHeadersScroll.preferredSize = Dimension(560, 64)
 
         val hint = JBLabel("API Key 通过 IntelliJ PasswordSafe 保存；留空表示清除已保存的 Key。")
         hint.foreground = JBColor.GRAY
@@ -49,6 +56,11 @@ class CommitMateConfigurable : Configurable {
             .addLabeledComponent("Temperature:", temperatureSpinner)
             .addLabeledComponent("最大 Diff 字符数:", maxDiffField)
             .addLabeledComponent("请求超时（秒）:", timeoutField)
+            .addLabeledComponent("自定义请求头:", extraHeadersScroll)
+            .addComponent(
+                JBLabel("每行一条 Name: Value，例如 opencode-go 需要的 X-Head-Session；不需要可留空。")
+                    .apply { foreground = JBColor.GRAY },
+            )
             .addComponent(workingTreeCheckBox)
             .addComponent(JBLabel("关闭后只读取 git 暂存区（git add 过的内容）。").apply { foreground = JBColor.GRAY })
             .addComponent(hint)
@@ -71,6 +83,7 @@ class CommitMateConfigurable : Configurable {
             (temperatureSpinner.value as Number).toDouble() != settings.temperature ||
             maxDiffField.text.trim().toIntOrNull() != settings.maxDiffCharacters ||
             timeoutField.text.trim().toIntOrNull() != settings.timeoutSeconds ||
+            extraHeadersArea.text.trim() != settings.extraHeaders.trim() ||
             workingTreeCheckBox.isSelected != settings.useWorkingTreeChanges
     }
 
@@ -80,6 +93,7 @@ class CommitMateConfigurable : Configurable {
         settings.temperature = (temperatureSpinner.value as Number).toDouble()
         maxDiffField.text.trim().toIntOrNull()?.let { settings.maxDiffCharacters = it }
         timeoutField.text.trim().toIntOrNull()?.let { settings.timeoutSeconds = it }
+        settings.extraHeaders = extraHeadersArea.text
         settings.useWorkingTreeChanges = workingTreeCheckBox.isSelected
         settings.setApiKey(String(apiKeyField.password))
     }
@@ -91,6 +105,7 @@ class CommitMateConfigurable : Configurable {
         temperatureSpinner.value = settings.temperature
         maxDiffField.text = settings.maxDiffCharacters.toString()
         timeoutField.text = settings.timeoutSeconds.toString()
+        extraHeadersArea.text = settings.extraHeaders
         workingTreeCheckBox.isSelected = settings.useWorkingTreeChanges
     }
 

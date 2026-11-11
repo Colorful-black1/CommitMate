@@ -164,6 +164,22 @@ class ChatCompletionClientTest {
     }
 
     @Test
+    fun `自定义请求头会被带上`() {
+        val captured = AtomicReference<String>()
+        val baseUrl = startServer { exchange ->
+            captured.set(exchange.requestHeaders.getFirst("X-Head-Session"))
+            respond(exchange, 200, """{"choices":[{"message":{"content":"ok"}}]}""")
+        }
+
+        client.complete(
+            config(baseUrl).copy(extraHeaders = mapOf("X-Head-Session" to "sess-42")),
+            messages(),
+        )
+
+        assertEquals("sess-42", captured.get())
+    }
+
+    @Test
     fun `未配置 API Key 时直接失败`() {
         val exception = assertThrows<LlmException> {
             client.complete(

@@ -1,5 +1,6 @@
 package com.commitmate.settings
 
+import com.commitmate.llm.ExtraHeaders
 import com.commitmate.llm.LlmConfig
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.openapi.components.PersistentStateComponent
@@ -26,6 +27,9 @@ class CommitMateSettings : PersistentStateComponent<CommitMateSettings.State> {
 
         /** 暂存区为空时，是否改用工作区未提交的修改。 */
         var useWorkingTreeChanges: Boolean = true
+
+        /** 自定义请求头，每行 `Name: Value`；用于需要额外头的网关（如 opencode-go 的 X-Head-Session）。 */
+        var extraHeaders: String = ""
     }
 
     private var myState = State()
@@ -72,6 +76,12 @@ class CommitMateSettings : PersistentStateComponent<CommitMateSettings.State> {
             myState.useWorkingTreeChanges = value
         }
 
+    var extraHeaders: String
+        get() = myState.extraHeaders
+        set(value) {
+            myState.extraHeaders = value
+        }
+
     /** 读取保存的 API Key；未配置或读取失败时返回 null。 */
     fun getApiKey(): String? = runCatching {
         PasswordStore.getInstance()?.getPassword(credentialAttributes())
@@ -92,6 +102,7 @@ class CommitMateSettings : PersistentStateComponent<CommitMateSettings.State> {
         model = model,
         temperature = temperature,
         readTimeoutMillis = timeoutSeconds * 1_000,
+        extraHeaders = ExtraHeaders.parse(extraHeaders),
     )
 
     private fun credentialAttributes(): CredentialAttributes =

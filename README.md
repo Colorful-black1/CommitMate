@@ -50,7 +50,7 @@
    ./gradlew buildPlugin
    ```
 
-   产物：`build/distributions/commit-mate-0.1.2.zip`
+   产物：`build/distributions/commit-mate-0.1.3.zip`
 
 2. 在 IDE 中安装：`Settings → Plugins → ⚙ → Install Plugin from Disk…`，选择上面的 zip，重启 IDE。
 
@@ -119,6 +119,9 @@ Windows 上把 `./gradlew` 换成 `gradlew.bat`。
 | 最大 Diff 字符数 | `60000` | 超过后按文件裁剪并提示 |
 | 请求超时 | `120` 秒 | 读取超时；连接超时固定 15 秒 |
 | API Key | 无 | 仅保存在 PasswordSafe；窗口里留空表示沿用已保存的 Key |
+| 自定义请求头 | 空 | 每行一条 `Name: Value`，用于需要额外请求头的网关（如 opencode-go 的 `X-Head-Session`） |
+
+> 自定义请求头会同时作用于普通生成与流式生成；`Authorization` / `Content-Type` 不会被覆盖。
 
 ## 设计说明
 
@@ -237,7 +240,7 @@ commit-mate/
 
 ## 测试
 
-自动化测试（`./gradlew test`，共 51 个用例，全部通过）：
+自动化测试（`./gradlew test`，共 57 个用例，全部通过）：
 
 | 测试类 | 覆盖内容 |
 | --- | --- |
@@ -268,8 +271,8 @@ commit-mate/
 | 验证项 | 结果 |
 | --- | --- |
 | `./gradlew compileKotlin` | BUILD SUCCESSFUL（无编译错误） |
-| `./gradlew test` | 51 个测试全部通过 |
-| `./gradlew buildPlugin` | 产出 `build/distributions/commit-mate-0.1.2.zip`（约 118 KB，未打包 Kotlin 标准库） |
+| `./gradlew test` | 57 个测试全部通过 |
+| `./gradlew buildPlugin` | 产出 `build/distributions/commit-mate-0.1.3.zip`（约 129 KB，未打包 Kotlin 标准库） |
 | Plugin Verifier（IntelliJ IDEA 2024.1） | `IC-241.14494.240`：**Compatible** |
 | Plugin Verifier（IntelliJ IDEA 2025.3） | `IU-253.28294.334`：**Compatible**，0 处废弃 API |
 | Plugin Verifier（WebStorm 2025.3） | `WS-253.28294.332`：**Compatible**，0 处废弃 API |

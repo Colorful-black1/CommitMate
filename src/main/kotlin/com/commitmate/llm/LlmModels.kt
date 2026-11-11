@@ -11,6 +11,8 @@ data class LlmConfig(
     val temperature: Double = DEFAULT_TEMPERATURE,
     val connectTimeoutMillis: Int = DEFAULT_CONNECT_TIMEOUT_MILLIS,
     val readTimeoutMillis: Int = DEFAULT_READ_TIMEOUT_MILLIS,
+    /** 额外的请求头，例如网关要求的 `X-Head-Session`。 */
+    val extraHeaders: Map<String, String> = emptyMap(),
 ) {
     companion object {
         const val DEFAULT_BASE_URL: String = "https://api.deepseek.com/v1"

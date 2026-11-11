@@ -88,6 +88,15 @@ class ChatCompletionClient {
         connection.setRequestProperty("Accept", "application/json")
         // 仅用于本次请求，不会写入日志
         connection.setRequestProperty("Authorization", "Bearer ${config.apiKey}")
+        // 网关可能要求的额外请求头（如 X-Head-Session），不覆盖上面的基础头
+        for ((name, value) in config.extraHeaders) {
+            if (name.equals("Authorization", ignoreCase = true) ||
+                name.equals("Content-Type", ignoreCase = true)
+            ) {
+                continue
+            }
+            runCatching { connection.setRequestProperty(name, value) }
+        }
     }
 
     private fun translateFailure(cause: Throwable?, baseUrl: String): Throwable = when (cause) {

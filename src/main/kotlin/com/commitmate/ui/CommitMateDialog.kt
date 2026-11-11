@@ -2,6 +2,7 @@ package com.commitmate.ui
 
 import com.commitmate.core.OperationCanceledException
 import com.commitmate.git.GitDiffService
+import com.commitmate.llm.ExtraHeaders
 import com.commitmate.llm.LlmConfig
 import com.commitmate.llm.LlmException
 import com.commitmate.model.StagedChanges
@@ -127,7 +128,9 @@ class CommitMateDialog(
             .addLabeledComponent("API Key:", apiKeyField)
             .panel
 
-        val hint = JBLabel("API Key 留空则使用已保存的 Key；填写后会保存到 IntelliJ PasswordSafe。")
+        val hint = JBLabel(
+            "API Key 留空则使用已保存的 Key；网关额外的请求头（如 X-Head-Session）在 Settings → Tools → Commit Mate 中配置。",
+        )
         hint.foreground = JBColor.GRAY
 
         val panel = JPanel(BorderLayout(0, 6))
@@ -413,6 +416,7 @@ class CommitMateDialog(
             model = model,
             temperature = settings.temperature,
             readTimeoutMillis = settings.timeoutSeconds * 1_000,
+            extraHeaders = ExtraHeaders.parse(settings.extraHeaders),
         )
     }
 
